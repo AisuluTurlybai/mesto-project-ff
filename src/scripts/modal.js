@@ -7,12 +7,12 @@ const handleEscKeyUp = (e) => {
 
 export const openModal = (modal) => {
   modal.classList.add('popup_is-opened');
-  document.addEventListener('keyup', handleEscKeyUp);
+  document.addEventListener('keydown', handleEscKeyUp);
 };
 
 export const closeModal= (modal) => {
   modal.classList.remove('popup_is-opened');
-  document.removeEventListener('keyup', handleEscKeyUp);
+  document.removeEventListener('keydown', handleEscKeyUp);
 };
 
 export const setPopupListeners = (popupElement) => {

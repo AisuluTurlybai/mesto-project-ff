@@ -1,6 +1,6 @@
 // @todo: Темплейт карточки
 import '../pages/index.css';
-import {initialCards, createCards, deleteCard} from './cards.js';
+import {initialCards, createCards, handleLikeClick, deleteCard} from './cards.js';
 import {openModal, closeModal, setPopupListeners} from './modal.js'
 import avatar from '../images/avatar.jpg';
 
@@ -13,74 +13,74 @@ const editProfileButton = document.querySelector('.profile__edit-button');
 const addProfileButton = document.querySelector('.profile__add-button');
 const imagePopup = document.querySelector('.popup_type_image');
 const imagePopupElement = imagePopup.querySelector ('.popup__image');
-const imagepopupCaption = imagePopup.querySelector ('.popup__caption');
-const formElement = document.querySelector('.popup__form[name="edit-profile"]');
-const nameInput = formElement.querySelector('.popup__input_type_name');
-const jobInput = formElement.querySelector('.popup__input_type_description');
-const profileName = document.querySelector('.profile__title');
-const profileJob = document.querySelector('.profile__description');
-const cardFromElement = document.querySelector('.popup__form[name="new-place"]');
-const titleInput = cardFromElement.querySelector('.popup__input_type_card-name')
-const linkInput = cardFromElement.querySelector('.popup__input_type_url');
+const imagePopupCaption = imagePopup.querySelector ('.popup__caption');
+const editProfileForm = document.querySelector('.popup__form[name="edit-profile"]');
+const editProfileNameInput = editProfileForm.querySelector('.popup__input_type_name');
+const editProfileJobInput = editProfileForm.querySelector('.popup__input_type_description');
+const profileNameText = document.querySelector('.profile__title');
+const profileJobElement = document.querySelector('.profile__description');
+const formNewCard = document.querySelector('.popup__form[name="new-place"]');
+const inputNameFormNewCard = formNewCard.querySelector('.popup__input_type_card-name')
+const inputLinkFormNewCard = formNewCard.querySelector('.popup__input_type_url');
 
+setPopupListeners(addCardPopup );
+setPopupListeners(editProfilePopup);
+setPopupListeners(imagePopup);
 
 addProfileButton.addEventListener('click', () => {
   openModal(addCardPopup);
-  setPopupListeners(addCardPopup );
 })
 
 initialCards.forEach ((item) => {
-  const card = createCards(item, deleteCard);
+  const card = createCards(item, deleteCard, handleLikeClick, openImagePopup);
   cardsList.append(card);
 })
 
 editProfileButton.addEventListener ('click', () => {
-  nameInput.value = profileName.textContent;
-  jobInput.value = profileJob.textContent;
+  editProfileNameInput.value = profileNameText.textContent;
+  editProfileJobInput.value = profileJobElement.textContent;
   openModal(editProfilePopup);
-  setPopupListeners(editProfilePopup);
 })
 
 function handleFormSubmit(evt) {
   evt.preventDefault(); 
   
-  profileName.textContent = nameInput.value;
-  profileJob.textContent = jobInput.value;
+  profileNameText.textContent = editProfileNameInput.value;
+  profileJobElement.textContent = editProfileJobInput.value;
 
   closeModal(editProfilePopup);
 }
 
-formElement.addEventListener('submit', handleFormSubmit);
+editProfileForm.addEventListener('submit', handleFormSubmit);
 
 function addUserCards (evt) {
   evt.preventDefault(); 
 
-  const newCards = [];
-  const link = linkInput.value;
-  const alt = titleInput.value;
-  const name = titleInput.value;
- 
- 
-  newCards.push({link, alt, name});
+  const newCard = {};
+  newCard.link = inputLinkFormNewCard.value;
+  newCard.alt = inputNameFormNewCard.value;
+  newCard.name = inputNameFormNewCard.value;
+  console.log(newCard);
 
-  newCards.forEach ((item) => {
-    const newCard = createCards(item, deleteCard);
-    cardsList.prepend(newCard);
-  })
+  const createNewCard = createCards(newCard, deleteCard, handleLikeClick, openImagePopup);
+  cardsList.prepend(createNewCard);
   
-  cardFromElement.reset();
+  formNewCard.reset();
   closeModal(addCardPopup);
 }
 
-cardFromElement.addEventListener('submit', addUserCards);
+formNewCard.addEventListener('submit', addUserCards);
 
-export function openImagePopup (image, caption) {
-  imagePopupElement.src = image;
-  imagePopupElement.alt = caption;
-  imagepopupCaption.textContent = caption;
+function openImagePopup (cardData) {
+  imagePopupElement.src = cardData.link;
+  imagePopupElement.alt = cardData.name;
+  imagePopupCaption.textContent = cardData.name;
+
   openModal(imagePopup);
-  setPopupListeners(imagePopup);
 }
+
+
+
 
 
 
