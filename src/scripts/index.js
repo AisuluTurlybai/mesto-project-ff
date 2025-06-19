@@ -1,7 +1,8 @@
 // @todo: Темплейт карточки
 import '../pages/index.css';
-import {initialCards, createCards, handleLikeClick, deleteCard} from './cards.js';
+import {createCard, handleLikeClick, deleteCard} from './card.js';
 import {openModal, closeModal, setPopupListeners} from './modal.js'
+import {initialCards} from './cards.js'
 import avatar from '../images/avatar.jpg';
 
 document.querySelector('.profile__image').style.backgroundImage = `url(${avatar})`;
@@ -23,17 +24,25 @@ const formNewCard = document.querySelector('.popup__form[name="new-place"]');
 const inputNameFormNewCard = formNewCard.querySelector('.popup__input_type_card-name')
 const inputLinkFormNewCard = formNewCard.querySelector('.popup__input_type_url');
 
+function openImagePopup (cardData) {
+  imagePopupElement.src = cardData.link;
+  imagePopupElement.alt = cardData.name;
+  imagePopupCaption.textContent = cardData.name;
+
+  openModal(imagePopup);
+}
+
+initialCards.forEach ((item) => {
+  const card = createCard(item, deleteCard, handleLikeClick, openImagePopup);
+  cardsList.append(card);
+})
+
 setPopupListeners(addCardPopup );
 setPopupListeners(editProfilePopup);
 setPopupListeners(imagePopup);
 
 addProfileButton.addEventListener('click', () => {
   openModal(addCardPopup);
-})
-
-initialCards.forEach ((item) => {
-  const card = createCards(item, deleteCard, handleLikeClick, openImagePopup);
-  cardsList.append(card);
 })
 
 editProfileButton.addEventListener ('click', () => {
@@ -62,37 +71,11 @@ function addUserCards (evt) {
   newCard.name = inputNameFormNewCard.value;
   console.log(newCard);
 
-  const createNewCard = createCards(newCard, deleteCard, handleLikeClick, openImagePopup);
-  cardsList.prepend(createNewCard);
+  const newCardElement = createCard(newCard, deleteCard, handleLikeClick, openImagePopup);
+  cardsList.prepend(newCardElement);
   
   formNewCard.reset();
   closeModal(addCardPopup);
 }
 
 formNewCard.addEventListener('submit', addUserCards);
-
-function openImagePopup (cardData) {
-  imagePopupElement.src = cardData.link;
-  imagePopupElement.alt = cardData.name;
-  imagePopupCaption.textContent = cardData.name;
-
-  openModal(imagePopup);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

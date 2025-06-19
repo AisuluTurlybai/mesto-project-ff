@@ -28,5 +28,3 @@ export const setPopupListeners = (popupElement) => {
     }
   });
 }
-
-
