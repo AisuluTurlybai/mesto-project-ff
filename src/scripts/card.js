@@ -1,7 +1,6 @@
 const cardTemplate = document.querySelector('#card-template').content;
-const profileInfo = document.querySelector('.profile__info');
 
-export const createCard = (cardData, onLikeCard, onOpenImagePopup, likeCard, dislikeCard, removeConfirmation) => { 
+export const createCard = (cardData, onLikeCard, onOpenImagePopup, likeCard, dislikeCard, removeConfirmation, userId) => { 
   const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
   const deleteCardButton = cardElement.querySelector('.card__delete-button');
   const cardImage = cardElement.querySelector('.card__image');
@@ -15,8 +14,8 @@ export const createCard = (cardData, onLikeCard, onOpenImagePopup, likeCard, dis
   cardElement.querySelector('.card__title').textContent = cardData.name;
  
 
-  if (isMyCard(cardData)) {
-    deleteCardButton.addEventListener('click', () => removeConfirmation(cardElement, deleteCardButton));
+  if (isMyCard(cardData, userId)) {
+    deleteCardButton.addEventListener('click', () => removeConfirmation(cardElement, deleteCardButton.id));
   } else {
     deleteCardButton.style.display = 'none';
   }
@@ -26,7 +25,7 @@ export const createCard = (cardData, onLikeCard, onOpenImagePopup, likeCard, dis
       onOpenImagePopup(cardData); 
   });
   likeCount.textContent = cardData.likes.length;
-  if (isThisCardLiked(cardData)) {
+  if (isThisCardLiked(cardData, userId)) {
     likeButton.classList.toggle('card__like-button_is-active');
   }
 
@@ -36,14 +35,22 @@ export const createCard = (cardData, onLikeCard, onOpenImagePopup, likeCard, dis
 export const handleLikeClick = (likeElement,likeCount, likeCard, dislikeCard) => {
   const isLiked = likeElement.classList.toggle('card__like-button_is-active');
   if(isLiked) {
-    likeCard(likeElement.id);
-    likeCount.textContent = parseInt(likeCount.textContent) + 1
+    likeCard(likeElement.id)
+      .then (data => {
+        likeCount.textContent = data.likes.length
+      })
+      .catch(err => {
+        console.error('Ошибка обновления:', err);
+      })
   } else {
-    dislikeCard(likeElement.id);
-    likeCount.textContent = parseInt(likeCount.textContent) - 1
+    dislikeCard(likeElement.id)
+    .then (data =>{
+      likeCount.textContent = data.likes.length
+    })
+    .catch(err => {
+      console.error('Ошибка обновления:', err);
+    })
   }
-  
-  console.log(likeCount.textContent);
 }
 
 export const deleteCard = removeCard => {
@@ -51,12 +58,10 @@ export const deleteCard = removeCard => {
     return;
 }
 
-function isThisCardLiked(card) {
-  const ownerId = profileInfo.id;
-  return card.likes.some((element) => element._id === ownerId);
+function isThisCardLiked(card, userId) {
+  return card.likes.some((element) => element._id === userId);
 }
 
-function isMyCard(card) {
-  const ownerId = profileInfo.id;
-  return card.owner._id === ownerId;
+function isMyCard(card, userId) {
+  return card.owner._id === userId;
 }

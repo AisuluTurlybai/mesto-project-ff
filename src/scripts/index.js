@@ -3,7 +3,7 @@ import '../pages/index.css';
 import {createCard, handleLikeClick, deleteCard} from './card.js';
 import {openModal, closeModal, setPopupListeners} from './modal.js'
 import { enableValidation, clearValidation } from './validation.js';
-import {getUserInfo, getInitialCards, updateUserInfo, postNewCards, deleteCardById, likeCard, dislikeCard, updateUserAvatar} from './api.js'
+import {getUserInfo, getInitialCards, updateUserInfo, postNewCard, deleteCardById, likeCard, dislikeCard, updateUserAvatar} from './api.js'
   
 const cardsList = document.querySelector('.places__list');
 const editProfilePopup = document.querySelector('.popup_type_edit');
@@ -17,7 +17,6 @@ const editProfileForm = document.querySelector('.popup__form[name="edit-profile"
 const editProfileNameInput = editProfileForm.querySelector('.popup__input_type_name');
 const editProfileJobInput = editProfileForm.querySelector('.popup__input_type_description');
 const profileNameText = document.querySelector('.profile__title');
-const profileInfo = document.querySelector('.profile__info');
 const profileJobElement = document.querySelector('.profile__description');
 const profileAvatar = document.querySelector('.profile__image');
 const formNewCard = document.querySelector('.popup__form[name="new-place"]');
@@ -31,21 +30,29 @@ const removeConfirmPopup = document.querySelector('.popup_type-remove');
 const removeConfirmationButton = removeConfirmPopup.querySelector('.popup__card-remove');
 
 let cardToDelete = null;
-let deleteButton = null;
+let cardIdToDelete = null;
+let userId = null;
   
-function removeConfirmation(cardElement, deleteCardButton) {
+function removeConfirmation(cardElement, cardId) {
   cardToDelete = cardElement;
-  deleteButton = deleteCardButton;
+  cardIdToDelete = cardId;
   openModal(removeConfirmPopup);
 }
 
-removeConfirmationButton.addEventListener('click', () => {
-  if (cardToDelete && deleteButton) {
+function handleRemoveConfirmationSubmit () {
+   if (cardToDelete && cardIdToDelete) {
     deleteCard(cardToDelete);
-    deleteCardById(deleteButton.id);
-    closeModal(removeConfirmPopup);
+    deleteCardById(cardIdToDelete)
+    .then (data =>{
+      closeModal(removeConfirmPopup);
+    })
+    .catch(err => {
+      console.error('Ошибка обновления:', err);
+    })
   }
-})
+}
+
+removeConfirmationButton.addEventListener('click', handleRemoveConfirmationSubmit);
 
 const validationConfig = {
   formSelector: '.popup__form',
@@ -84,7 +91,7 @@ editProfileButton.addEventListener ('click', () => {
   openModal(editProfilePopup);
 })
 
-function handleFormSubmit(evt) {
+function handleProfileFormSubmit(evt) {
   evt.preventDefault();
   
   const submitButton = evt.submitter || editProfileForm.querySelector('.popup__button');
@@ -104,7 +111,7 @@ function handleFormSubmit(evt) {
   })
 }
 
-editProfileForm.addEventListener('submit', handleFormSubmit);
+editProfileForm.addEventListener('submit', handleProfileFormSubmit);
 
 function addUserCards (evt) {
   evt.preventDefault(); 
@@ -116,9 +123,9 @@ function addUserCards (evt) {
   const name = inputNameFormNewCard.value;
   const link = inputLinkFormNewCard.value;
 
-  postNewCards(name, link)
+  postNewCard(name, link)
     .then((data) => {
-      const cardElement = createCard(data, handleLikeClick, openImagePopup, likeCard, dislikeCard, removeConfirmation);
+      const cardElement = createCard(data, handleLikeClick, openImagePopup, likeCard, dislikeCard, removeConfirmation, userId);
       cardsList.prepend(cardElement);
       formNewCard.reset();
       closeModal(addCardPopup);
@@ -138,15 +145,18 @@ Promise.all([getUserInfo(), getInitialCards()])
   setUserInfo(userData)
   setCards(cards)
 })
+.catch(err => {
+  console.error('Ошибка обновления:', err);
+})
 
 function setCards(cards) {
   cards.forEach ((item) => {
-    const card = createCard(item, handleLikeClick, openImagePopup, likeCard, dislikeCard, removeConfirmation);
+    const card = createCard(item, handleLikeClick, openImagePopup, likeCard, dislikeCard, removeConfirmation, userId);
     cardsList.append(card);
   })
 }
 function setUserInfo(userData) {
-  profileInfo.id = userData._id;
+  userId = userData._id;
   profileNameText.textContent = userData.name;
   profileJobElement.textContent = userData.about;
   profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
